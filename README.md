@@ -14,7 +14,7 @@ The container will be created in the remote machine, and will use its computatio
 
 * [Requirements](#Requirements)
 * [Connecting to the remote machine](#Connecting-to-the-remote-machine)
-* [Creating the remote container](#Creating-the-remote-container)
+* [Using the VSCode Dev Container workspace](#Using-the-VSCode-Dev-Container-workspace)
 * [Troubleshooting](#Troubleshooting)
 * [Additional Information](#Contact)
 
