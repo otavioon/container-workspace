@@ -1,0 +1,61 @@
+FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+
+ARG USERNAME=vscode
+ARG USER_UID=1000
+ARG USER_GID=$USER_UID
+
+RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
+    apt remove -y python && \
+    apt install -y python3.10 \
+        python3.10-venv \
+        python3.10-full \
+        python3-pip \
+        build-essential \
+        bzip2 \
+        ca-certificates \
+        cmake \
+        curl \
+        git \
+        htop \
+        libssl-dev \
+        net-tools \
+        tmux \
+        tree \
+        unrar \
+        unzip \
+        vim \
+        wget \
+        xdot
+
+# Create the user
+RUN groupadd --gid $USER_GID $USERNAME \
+    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
+    #
+    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
+    && apt-get update \
+    && apt-get install -y sudo \
+    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
+    && chmod 0440 /etc/sudoers.d/$USERNAME
+
+RUN groupmod --gid $USER_GID $USERNAME \
+    && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
+    && chown -R $USER_UID:$USER_GID /home/$USERNAME
+
+# ********************************************************
+# * Anything else you want to do like clean up goes here *
+# ********************************************************
+RUN     rm -rf /var/lib/apt/lists/* && \
+        ldconfig && \
+        apt autoremove && \
+        apt clean
+# System-wide python packages
+RUN ln -s /usr/bin/python3.10 /usr/bin/python && python3.10 -m pip install --upgrade pip ipykernel setuptools black
+RUN chsh --shell /bin/bash $USERNAME
+# [Optional] Set the default user. Omit if you want to keep the default as root.
+USER $USERNAME
+
+# Deep learning packages
+RUN python -m pip install --pre torch==2.1.0.dev20230805+cu121 torchvision==0.16.0dev20230805 --index-url https://download.pytorch.org/whl/nightly/cu121 
+RUN python -m pip install pytorch-lightning plotly matplotlib seaborn pandas pytest torchmetrics nbformat kaleido
+  
+
