@@ -55,7 +55,7 @@ RUN chsh --shell /bin/bash $USERNAME
 USER $USERNAME
 
 # Deep learning packages
-RUN python -m pip install --pre torch==2.1.0.dev20230805+cu121 torchvision==0.16.0dev20230805 --index-url https://download.pytorch.org/whl/nightly/cu121 
+RUN python -m pip install --pre torch torchvision
 RUN python -m pip install pytorch-lightning plotly matplotlib seaborn pandas pytest torchmetrics nbformat kaleido
   
 
