@@ -161,6 +161,13 @@ Besides that, when you close your VSCode, the container still runs in the remote
 
 Here we describe some common problems that may occur when using the VSCode Dev Container workspace.
 
+### Failed to initialize NVML: Unknown Error
+
+When this happens, you may with to rebuild your container. Open the command pallete (Control+Shift+P) and select `>Dev Containers: Rebuild Container`.
+
+ > **NOTE**: When rebuilding the container, all installed packages will be lost, except things stored in the root folder. You may need to reinstall all packages. It is recommended to put all installations (pip packages, yout packages) inside post_start.sh, a script that will run every time the container is rebuilt.
+
+If the problem persists, check the next section.
 
 ### Checking NVIDIA remote container availability
 
