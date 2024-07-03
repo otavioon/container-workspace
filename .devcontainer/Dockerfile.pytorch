@@ -1,42 +1,43 @@
-FROM nvidia/cuda:12.1.0-cudnn8-runtime-ubuntu22.04
+FROM nvcr.io/nvidia/pytorch:23.06-py3
 
 ARG USERNAME=vscode
 ARG USER_UID=1000
 ARG USER_GID=$USER_UID
 
-RUN apt-get update && export DEBIAN_FRONTEND=noninteractive && \
-    apt remove -y python && \
-    apt install -y python3.10 \
-        python3.10-venv \
-        python3.10-full \
-        python3-pip \
-        build-essential \
+# Install common apt packages
+RUN export DEBIAN_FRONTEND=noninteractive && \
+    apt-get update &&  \
+    apt install -y  build-essential \
         bzip2 \
         ca-certificates \
         cmake \
         curl \
+        curl \
         git \
         htop \
         libssl-dev \
+        nvtop \
         net-tools \
+        pandoc \
+        python3-sphinx \
         tmux \
         tree \
         unrar \
         unzip \
         vim \
         wget \
-        xdot
+        xdot \
+        zip
 
-# Create the user
-RUN groupadd --gid $USER_GID $USERNAME \
-    && useradd --uid $USER_UID --gid $USER_GID -m $USERNAME \
-    #
-    # [Optional] Add sudo support. Omit if you don't need to install software after connecting.
-    && apt-get update \
-    && apt-get install -y sudo \
-    && echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME \
-    && chmod 0440 /etc/sudoers.d/$USERNAME
+# Create the vscode user (non-root user) and add sudo support
+RUN groupadd --gid $USER_GID $USERNAME && \
+    useradd --uid $USER_UID --gid $USER_GID -m $USERNAME  && \
+    apt-get update && \
+    apt-get install -y sudo && \
+    echo $USERNAME ALL=\(root\) NOPASSWD:ALL > /etc/sudoers.d/$USERNAME && \
+    chmod 0440 /etc/sudoers.d/$USERNAME
 
+# Change group to same as system
 RUN groupmod --gid $USER_GID $USERNAME \
     && usermod --uid $USER_UID --gid $USER_GID $USERNAME \
     && chown -R $USER_UID:$USER_GID /home/$USERNAME
@@ -48,14 +49,28 @@ RUN     rm -rf /var/lib/apt/lists/* && \
         ldconfig && \
         apt autoremove && \
         apt clean
+
+# ***************** Specific packages ********************
+
 # System-wide python packages
-RUN ln -s /usr/bin/python3.10 /usr/bin/python && python3.10 -m pip install --upgrade pip ipykernel setuptools black
+RUN python -m pip install --upgrade pip setuptools pytest && \
+    python -m pip install \
+        black \
+        ipykernel \
+        kaleido>=0.2 \
+        lightning>=2.1.9 \
+        matplotlib>=3.7 \
+        nbformat \
+        numpy>=1.22 \
+        pandas>=2.0 \
+        plotly>=5.18 \
+        seaborn>=0.11 \
+        scipy>=1.10 \
+        torchmetrics>=1.3.0 \
+        torchvision>=0.15
+
+
+# Change shell for user b
 RUN chsh --shell /bin/bash $USERNAME
-# [Optional] Set the default user. Omit if you want to keep the default as root.
+#  Set the default user
 USER $USERNAME
-
-# Deep learning packages
-RUN python -m pip install --pre torch torchvision
-RUN python -m pip install pytorch-lightning plotly matplotlib seaborn pandas pytest torchmetrics nbformat kaleido
-  
-
